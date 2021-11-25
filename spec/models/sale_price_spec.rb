@@ -91,6 +91,57 @@ describe Spree::SalePrice do
     end
   end
 
+  describe '#active?' do
+    subject { sale_price.active? }
+
+    let(:sale_price) do
+      build(:sale_price,
+            enabled: enabled,
+            start_at: start_at,
+            end_at: end_at)
+    end
+
+    context 'when sale price enabled is set to false' do
+      let(:enabled)   { false }
+      let(:start_at)  { 2.days.ago }
+      let(:end_at)    { 2.days.from_now }
+
+      it { is_expected.to be_falsey }
+    end
+
+    context 'when sale price enabled is set to true' do
+      let(:enabled) { true }
+
+      context 'when the are neither start_at or end_at dates' do
+        let(:start_at)  { nil }
+        let(:end_at)    { nil }
+
+        it { is_expected.to be_truthy }
+      end
+
+      context 'when current time is between start_at and end_at dates' do
+        let(:start_at)  { Time.zone.now.beginning_of_day }
+        let(:end_at)    { Time.zone.now.end_of_day }
+
+        it { is_expected.to be_truthy }
+      end
+
+      context 'when current time is after end_at date' do
+        let(:start_at)  { nil }
+        let(:end_at)    { Time.zone.now.beginning_of_day }
+
+        it { is_expected.to be_falsey }
+      end
+
+      context 'when current time is before start_at date' do
+        let(:start_at)  { Time.zone.now.end_of_day }
+        let(:end_at)    { nil }
+
+        it { is_expected.to be_falsey }
+      end
+    end
+  end
+
   context 'touching associated product when destroyed' do
     subject { -> { sale_price.reload.discard } }
     let!(:product) { sale_price.product }

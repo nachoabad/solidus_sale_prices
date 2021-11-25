@@ -53,7 +53,7 @@ module Spree
     end
 
     def active?
-      Spree::SalePrice.active.include? self
+      enabled && !start_at&.future? && !end_at&.past?
     end
 
     def start(end_time = nil)
