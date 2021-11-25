@@ -8,7 +8,9 @@ module Spree
       respond_to :js, only: :destroy
 
       def index
-        @sale_prices = Spree::SalePrice.for_product(@product).ordered
+        @sale_prices = Spree::SalePrice.includes([:price, :variant])
+                                       .for_product(@product)
+                                       .ordered
       end
 
       def create
